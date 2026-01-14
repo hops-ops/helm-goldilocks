@@ -1,0 +1,59 @@
+# code: language=yaml
+#
+# Helm release for Goldilocks - VPA recommendations dashboard
+#
+# Defaults:
+# - Enables controller to watch namespaces with goldilocks.fairwinds.com/enabled=true label
+# - Enables dashboard for viewing recommendations
+# - Installs VPA recommender (not updater or admission controller)
+#
+
+{{- $g := $state.goldilocks }}
+
+---
+apiVersion: helm.m.crossplane.io/v1beta1
+kind: Release
+metadata:
+  name: {{ $g.releaseName }}
+  annotations:
+    {{ setResourceNameAnnotation "helm-release-goldilocks" }}
+  labels: {{ $g.labels | toJson }}
+spec:
+  managementPolicies: {{ $g.managementPolicies | toJson }}
+  forProvider:
+    chart:
+      name: goldilocks
+      repository: https://charts.fairwinds.com/stable
+      version: 10.2.0
+    namespace: {{ $g.namespace }}
+    {{- if $g.overrideAllValues }}
+    values:
+      {{- toYaml $g.overrideAllValues | nindent 6 }}
+    {{- else }}
+    values:
+      fullnameOverride: goldilocks
+      nameOverride: goldilocks
+      # Controller watches namespaces with goldilocks.fairwinds.com/enabled=true
+      controller:
+        enabled: true
+      # Dashboard for viewing VPA recommendations
+      dashboard:
+        enabled: true
+        replicaCount: 1
+      # Install VPA recommender only (not updater or admission controller)
+      vpa:
+        enabled: true
+        recommender:
+          enabled: true
+        updater:
+          enabled: false
+        admissionController:
+          enabled: false
+      {{- if $g.values }}
+      {{- toYaml $g.values | nindent 6 }}
+      {{- end }}
+    {{- end }}
+  rollbackLimit: 3
+  providerConfigRef:
+    name: {{ $g.providerConfigRef.name }}
+    kind: {{ $g.providerConfigRef.kind }}
