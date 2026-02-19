@@ -31,8 +31,6 @@ spec:
       {{- toYaml $g.overrideAllValues | nindent 6 }}
     {{- else }}
     values:
-      fullnameOverride: goldilocks
-      nameOverride: goldilocks
       # Controller watches namespaces with goldilocks.fairwinds.com/enabled=true
       controller:
         enabled: true

@@ -1,5 +1,0 @@
-apiVersion: v2
-name: helm-goldilocks
-version: 0.0.0
-description: GitOps packaging for the Goldilocks Crossplane configuration
-appVersion: 10.2.0
